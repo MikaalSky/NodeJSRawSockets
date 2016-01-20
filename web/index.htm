@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+	<script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
+	<input id="input" type="text" placeholder="datatosend"> <button id="go" type="submit">Submit</button>
+	<div id="pingCounter">
+
+	</div>
+	<br>
+	Other Client
+	<div id="TypingProgress">
+	</div>
+	<script>
+	  	var socket = new WebSocket("ws://localhost:3000");
+	  	var pingCounter = document.getElementById("pingCounter");
+	  	var typey = document.getElementById("TypingProgress");
+	  	var input = document.getElementById("input");
+	  	input.onkeyup = function() {
+	  		socket.send(JSON.stringify({"header":"typing","body":input.value.toString()}));
+	  	}
+	  	socket.onopen = function(){
+	  		document.getElementById("input").enabled = true;
+		}
+		socket.onmessage = function(evt) {
+			if(evt.data == 0){
+				socket.send(1);
+				return;
+			}
+			try{
+				var data = JSON.parse(evt.data);
+				switch(data.header){
+					case "error":
+						console.error("[SERVER ERROR]" + data.body);
+					break;
+					case "tests":
+						console.log("received testing for some reason.")
+					break;
+					case "clientPing":
+						pingCounter.textContent = data.body.toString() + "ms"
+					break;
+					case "typingReceive":
+						typey.textContent = data.body.toString();
+					break;
+				}
+			}catch(e){
+				console.warn("SERVER SENT INVALID JSON REPLY!")
+			}
+		};
+		document.getElementById("go").onclick = function(){
+			socket.send(JSON.stringify({"header":"tests","body":input.value}));
+		}
+	</script>
+</body>
+</html>

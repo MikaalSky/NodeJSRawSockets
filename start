@@ -1,0 +1,4 @@
+#!/bin/bash
+# A bash script to do stuff
+cd Desktop/RawSocketServerNode
+node index.js
